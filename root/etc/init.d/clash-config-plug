@@ -1,0 +1,16 @@
+#!/bin/sh /etc/rc.common
+START=99
+STOP=15
+
+stop() {
+  pids=$(pidof clash-config-plug)
+  for pid in $pids; do
+    kill -9 "$pid" 2>/dev/null
+  done >/dev/null 2>&1
+}
+
+start() {
+  now="$(date +"%Y-%m-%d %H:%M:%S")"
+  echo "$now start clash-config-plug" >>/usr/share/clash-config-plug/f.log
+  nohup /usr/bin/clash-config-plug >/usr/share/clash-config-plug/f.log 2>&1 &
+}

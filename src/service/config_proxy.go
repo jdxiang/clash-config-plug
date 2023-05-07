@@ -32,7 +32,7 @@ func parseConfig(data []byte, ty string) (config common2.ClashConfig, err error)
 
 func rulesConfig() (config common2.RulesConfig, err error) {
 	var data []byte
-	data, err = ioutil.ReadFile("./conf/rules.yaml") // TODO
+	data, err = ioutil.ReadFile("/usr/share/clash-config-plug/rules.yaml") // TODO
 	if err != nil {
 		return
 	}
