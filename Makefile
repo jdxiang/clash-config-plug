@@ -1,11 +1,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=clash-config-plug
-PKG_VERSION:=0.0.1
+PKG_VERSION:=0.0.2
 PKG_RELEASE:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE:=$(PKG_BUILD_DIR)
+PKG_SOURCE:=$(PKG_BUILD_DIR)/src
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
@@ -27,7 +27,7 @@ define Package/$(PKG_NAME)
 	CATEGORY:=Network
 	TITLE:=Open Clash cofig proxy plugin
 	DEPENDS:=$(GO_ARCH_DEPENDS)
-	URL:=https://www.baidu.com
+	URL:=https://github.com/jdxiang/clash-config-plug
 	SUBMENU:=clash-config-plug
 endef
 
@@ -37,7 +37,8 @@ endef
 
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)/
+	$(CP) $(CURDIR)/root $(PKG_BUILD_DIR)
+	$(CP) $(CURDIR)/src/* $(PKG_BUILD_DIR)
 endef
 
 define Build/Configure
@@ -48,7 +49,6 @@ define Build/Compile
 	$(eval GO_PKG_BUILD_PKG:=$(GO_PKG))
 	$(call GoPackage/Build/Configure)
 	$(call GoPackage/Build/Compile)
-	$(STAGING_DIR_HOST)/bin/upx --lzma --best $(GO_PKG_BUILD_BIN_DIR)/clash-config-plug
 	chmod +wx $(GO_PKG_BUILD_BIN_DIR)/clash-config-plug
 endef
 
@@ -56,7 +56,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/clash-config-plug $(1)/usr/bin/clash-config-plug
 	$(INSTALL_DIR) $(1)/usr/share/clash-config-plug
-	$(CP) ./conf/* $(1)/usr/share/clash-config-plug/
+	$(CP) $(PKG_BUILD_DIR)/root/* $(1)/
 
 endef
 $(eval $(call GoBinPackage,$(PKG_NAME)))
