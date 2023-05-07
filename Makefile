@@ -52,12 +52,19 @@ define Build/Compile
 	chmod +wx $(GO_PKG_BUILD_BIN_DIR)/clash-config-plug
 endef
 
+define Package/$(PKG_NAME)/postrm
+#!/bin/sh
+	rm -rf /usr/share/clash-config-plug >/dev/null 2>&1
+	rm  /etc/init.d/clash-config-plug >/dev/null 2>&1
+	exit 0
+endef
+
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/clash-config-plug $(1)/usr/bin/clash-config-plug
 	$(INSTALL_DIR) $(1)/usr/share/clash-config-plug
 	$(CP) $(PKG_BUILD_DIR)/root/* $(1)/
-
+	chmod +x $(PKG_BUILD_DIR)/root/etc/init.d/clash-config-plug
 endef
 $(eval $(call GoBinPackage,$(PKG_NAME)))
 $(eval $(call BuildPackage,$(PKG_NAME)))
