@@ -1,6 +1,7 @@
 package main
 
 import (
+	"clash-config-plug/common"
 	"clash-config-plug/service"
 	"errors"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 
 func responseErr(w http.ResponseWriter, err error) {
 	log.Printf("handle err %v", err)
-	io.WriteString(w, fmt.Sprintf("500 %s", err))
+	io.WriteString(w, fmt.Sprintf("500: %s", err))
 }
 
 func proxyClashConfig(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +38,7 @@ func proxyClashConfig(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/octet-stream; charset=utf-8")
 	w.Header().Set("Content-Disposition", "attachment; filename=clash-config-plug.yaml")
+	w.Header().Set(common.SubscriptionInfo, config.SubscriptionInfo)
 	io.WriteString(w, string(data))
 }
 

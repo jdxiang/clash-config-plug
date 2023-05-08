@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=clash-config-plug
-PKG_VERSION:=0.0.2
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
@@ -29,6 +29,7 @@ define Package/$(PKG_NAME)
 	DEPENDS:=$(GO_ARCH_DEPENDS)
 	URL:=https://github.com/jdxiang/clash-config-plug
 	SUBMENU:=clash-config-plug
+	PKGARCH:=all
 endef
 
 define Package/$(PKG_NAME)/description
@@ -49,11 +50,13 @@ define Build/Compile
 	$(eval GO_PKG_BUILD_PKG:=$(GO_PKG))
 	$(call GoPackage/Build/Configure)
 	$(call GoPackage/Build/Compile)
+	$(STAGING_DIR_HOST)/bin/upx --lzma --best $(GO_PKG_BUILD_BIN_DIR)/clash-config-plug
 	chmod +wx $(GO_PKG_BUILD_BIN_DIR)/clash-config-plug
 endef
 
 define Package/$(PKG_NAME)/postrm
 #!/bin/sh
+	/etc/init.d/clash-config-plug stop >/dev/null 2>&1
 	rm -rf /usr/share/clash-config-plug >/dev/null 2>&1
 	rm  /etc/init.d/clash-config-plug >/dev/null 2>&1
 	exit 0

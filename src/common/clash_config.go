@@ -13,6 +13,7 @@ type ClashConfig struct {
 	Proxies            []Proxies     `yaml:"proxies"`
 	ProxyGroups        []ProxyGroups `yaml:"proxy-groups"`
 	Rules              []string      `yaml:"rules"`
+	SubscriptionInfo   string        `yaml:"-"`
 }
 
 type FallbackFilter struct {
@@ -50,9 +51,11 @@ type Proxies struct {
 }
 
 type ProxyGroups struct {
-	Name    string   `yaml:"name"`
-	Type    string   `yaml:"type"`
-	Proxies []string `yaml:"proxies"`
+	Name     string   `yaml:"name"`
+	Type     string   `yaml:"type"`
+	Proxies  []string `yaml:"proxies"`
+	Url      string   `yaml:"url,omitempty"`
+	Interval int      `yaml:"interval,omitempty"`
 }
 
 type RulesConfig struct {
