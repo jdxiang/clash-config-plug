@@ -1,14 +1,14 @@
 package service
 
 import (
-	common2 "clash-config-plug/common"
+	"clash-config-plug/common"
 	"errors"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"net/http"
 )
 
-func getConfig(subUrl string) ([]byte, error) {
+func getConfig(subUrl string) (config *common.ClashConfig, err error) {
 	resp, err := http.Get(subUrl)
 	if err != nil {
 		return nil, err
@@ -16,21 +16,27 @@ func getConfig(subUrl string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
-	return data, err
+	if err != nil {
+		return nil, err
+	}
+
+	return parseConfig(data, common.Yaml, resp.Header.Get("Subscription-Userinfo"))
 }
 
-func parseConfig(data []byte, ty string) (config common2.ClashConfig, err error) {
+func parseConfig(data []byte, ty string, subInfo string) (config *common.ClashConfig, err error) {
+	config = &common.ClashConfig{}
 	switch ty {
-	case common2.Yaml:
-		err = yaml.Unmarshal(data, &config)
+	case common.Yaml:
+		err = yaml.Unmarshal(data, config)
 	default:
 		err = errors.New("un support config type")
 	}
 
+	config.SubscriptionInfo = subInfo
 	return config, err
 }
 
-func rulesConfig() (config common2.RulesConfig, err error) {
+func rulesConfig() (config common.RulesConfig, err error) {
 	var data []byte
 	data, err = ioutil.ReadFile("/usr/share/clash-config-plug/rules.yaml") // TODO
 	if err != nil {
@@ -41,8 +47,8 @@ func rulesConfig() (config common2.RulesConfig, err error) {
 }
 
 // only modify proxy groups and rules
-func convertConfig(srcConfig *common2.ClashConfig) error {
-	srcConfig.ProxyGroups, srcConfig.Rules = make([]common2.ProxyGroups, 0), make([]string, 0)
+func convertConfig(srcConfig *common.ClashConfig) error {
+	srcConfig.ProxyGroups, srcConfig.Rules = make([]common.ProxyGroups, 0), make([]string, 0)
 	ruleConfig, err := rulesConfig()
 	if err != nil {
 		return err
@@ -61,19 +67,14 @@ func convertConfig(srcConfig *common2.ClashConfig) error {
 	return nil
 }
 
-func GetConfig(subUrl string) (*common2.ClashConfig, error) {
-	data, err := getConfig(subUrl)
+func GetConfig(subUrl string) (*common.ClashConfig, error) {
+	config, err := getConfig(subUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	config, err := parseConfig(data, common2.Yaml)
-	if err != nil {
-		return nil, err
+	if err := convertConfig(config); err != nil {
+		return config, err
 	}
-
-	if err := convertConfig(&config); err != nil {
-		return &config, err
-	}
-	return &config, nil
+	return config, nil
 }
